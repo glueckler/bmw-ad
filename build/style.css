@@ -126,19 +126,15 @@ p {
 }
 
 #control-box {
-  height: 152px;
+  height: 170px;
   width: 205px;
   position: absolute;
   top: 15px;
   left: 246px;
-
-  background: green;
-  opacity: .5;
 }
 
 #control-knob {
   width: 30px;
   height: 30px;
-  background: red;
   position: absolute;
 }
