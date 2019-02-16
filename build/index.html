@@ -47,24 +47,47 @@
         id="car1"
         class="full-img abs-layover ad__car"
       />
+      <img
+        src="images/car02.png"
+        alt="car 2"
+        id="car2"
+        class="full-img abs-layover ad__car"
+      />
+      <img
+        src="images/car03.png"
+        alt="car 3"
+        id="car3"
+        class="full-img abs-layover ad__car"
+      />
+      <img
+        src="images/car04.png"
+        alt="car 4"
+        id="car4"
+        class="full-img abs-layover ad__car"
+      />
       <!-- Utility Blue Block -->
       <div class="ad__dial-utility"></div>
       <!-- All html ad content -->
       <!-- btw adblock hides elements named ad__content, sneaky.. -->
       <div class="ad__con abs-layover">
         <div class="ad__con__left">
-          <h1>DISCOVER THE<br />BMW X3<br />xDRIVE20i M SPORT</h1>
+          <h1>DISCOVER THE</h1>
+          <h1 id="car-desc1" class="anim-text"></h1>
+          <h1 id="car-desc2" class="anim-text"></h1>
           <button class="con__left__button">Discover more</button>
         </div>
         <div class="con__control">
           <span class="con__control--sml">FROM</span>
           <p>£<span class="con__price"></span></p>
           <p>Monthly rentals</p>
-          <p class="con__control--thin">Plus $8000 initial rental</p>
+          <p class="con__control--thin">
+            Plus £<span id="init-rental" class="anim-text"></span> initial rental
+          </p>
         </div>
         <div id="control-box">
           <div id="control-knob"></div>
         </div>
+        <div class="con__terms anim-text">Ts&amp;Cs apply. <span id="terms-info"></span></div>
       </div>
     </div>
   </body>

@@ -25,6 +25,7 @@ p {
   position: relative;
   width: 970px;
   height: 250px;
+  overflow: hidden;
 }
 
 .abs-layover {
@@ -77,6 +78,7 @@ p {
 }
 
 .ad__glow {
+  opacity: 0;
   z-index: 45;
 }
 
@@ -88,6 +90,7 @@ p {
 /* . . . */
 .ad__car {
   z-index: 60;
+  opacity: 0;
 }
 
 /* Ad Content Styles */
@@ -139,6 +142,14 @@ p {
   font-size: 15px;
 }
 
+.con__terms {
+  font-size: 10px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+/* hidden dial features */
 #control-box {
   height: 170px;
   width: 205px;

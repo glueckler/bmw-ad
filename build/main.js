@@ -8,11 +8,6 @@ const anime = window.anime;
 const CountUp = window.CountUp;
 
 const MAX_ROTATION = 231;
-const defaultDialAnim = {
-  targets: '.dial-anime',
-  duration: 150,
-  easing: 'easeInOutSine'
-};
 
 const defaultPriceAnim = {
   useEasing: true,
@@ -26,60 +21,86 @@ let currentState = 'c1';
 const STATES = {
   c1: {
     id: 'c1',
+    photoId: 'car1',
     posX: 7,
     posY: 122,
     rot: 0,
     price: 249,
-    carName: 'BMW 118i SPORT 5-DOOR.',
+    carDesc1: 'BMW 118i',
+    carDesc2: 'SPORT 5-DOOR.',
+    initRental: '4,549',
     utilBlockHeight: 0,
+    termsInfo: '',
   },
   c2: {
     id: 'c2',
+    photoId: 'car2',
     posX: 31,
     posY: 18,
     rot: 77,
     price: 359,
-    carName: 'BMW X2 sDRIVE20i M SPORT.',
+    carDesc1: 'BMW X2',
+    carDesc2: 'sDRIVE20i M SPORT.',
+    initRental: '8,069',
     utilBlockHeight: 40,
+    termsInfo: 'Includes optional Misano Blue Xirallic paint.',
   },
   c3: {
     id: 'c3',
+    photoId: 'car3',
     posX: 136,
     posY: 18,
     rot: 154,
     price: 409,
-    carName: 'BMW X3 xDRIVE20i M SPORT.',
+    carDesc1: 'BMW X3',
+    carDesc2: 'xDRIVE20i M SPORT.',
+    initRental: '8,699',
     utilBlockHeight: 155,
+    termsInfo: 'Includes optional Sophisto Grey Xirallic paint.',
   },
   c4: {
     id: 'c4',
+    photoId: 'car4',
     posX: 166,
     posY: 122,
     rot: 231,
     price: 679,
-    carName: 'BMW X5 xDRIVE30d M SPORT.',
+    carDesc1: 'BMW X5',
+    carDesc2: 'xDRIVE30d M SPORT.',
+    initRental: '10,419',
     utilBlockHeight: 155,
+    termsInfo: '',
   },
 };
+const getCurSta = () => STATES[currentState];
 
 // elements
-const $ad = $('#TBM-BMW-ad');
 const $knob = $('#control-knob');
 const $knobBox = $('#control-box');
 const $price = $('.con__price');
 const $utilityBlock = $('.ad__dial-utility');
+const $carDesc1 = $('#car-desc1');
+const $carDesc2 = $('#car-desc2');
+const $initRental = $('#init-rental');
+const $termsInfo = $('#terms-info');
 
 // init DOM state/styles/values
+$price.innerText = getCurSta().price;
+$carDesc1.innerText = getCurSta().carDesc1;
+$carDesc2.innerText = getCurSta().carDesc2;
+$initRental.innerText = getCurSta().initRental;
+$termsInfo.innerText = getCurSta().termsInfo;
+
 applyStyles(
   $knob,
-  createPosStyles(STATES[currentState].posX, STATES[currentState].posY)
+  createPosStyles(getCurSta().posX, getCurSta().posY)
 );
 
-$price.innerText = STATES[currentState].price;
-
 applyStyles($utilityBlock, {
-  height: `${STATES[currentState].utilBlockHeight}px`
+  height: `${getCurSta().utilBlockHeight}px`,
 });
+
+applyStyles($(`#${getCurSta().photoId}`), { opacity: 1 });
 
 // events
 $event($knob, 'mousedown', e => {
@@ -114,7 +135,7 @@ $event($knobBox, 'mousemove', e => {
   }
   const nxtState = shouldChangeStates(offsetX, offsetY);
   if (nxtState.yesChangeState) {
-    changeStates(STATES[currentState], nxtState.nxtState);
+    changeStates(getCurSta(), nxtState.nxtState);
   }
 });
 
@@ -150,24 +171,31 @@ function createPosStyles(left, top) {
 
 function engageKnob(engage) {
   const glowAnimDefaults = {
-    targets: 'ad__glow',
-    duration: 100,
+    targets: '.ad__glow',
+    duration: 300,
     ease: 'easeInOutSine',
   };
   if (engage) {
+    dialAnim.pause();
     knobEngaged = true;
     anime({
       ...glowAnimDefaults,
-      opacity: [0, 100],
+      opacity: 1,
     });
     return null;
   }
-  knobEngaged = false;
+
+  // if the knobEngage is already false, return and avoid restarting anim
+  if (!knobEngaged) return null;
   anime({
     ...glowAnimDefaults,
-    opacity: [100, 0],
+    opacity: 0,
+    complete: () => {
+      dialAnim.restart();
+      dialAnim.play();
+    }
   });
-  return null;
+  knobEngaged = false;
 }
 
 function shouldChangeStates(mouseX, mouseY) {
@@ -185,9 +213,9 @@ function shouldChangeStates(mouseX, mouseY) {
       return nxtVal;
     }
     return closest;
-  }, STATES[currentState]);
+  }, getCurSta());
 
-  const yesChangeState = closestStateToMouse !== STATES[currentState];
+  const yesChangeState = closestStateToMouse !== getCurSta();
   return {
     yesChangeState,
     nxtState: closestStateToMouse,
@@ -196,7 +224,9 @@ function shouldChangeStates(mouseX, mouseY) {
 
 function animateDial(state1, state2) {
   anime({
-    ...defaultDialAnim,
+    targets: '.dial-anime',
+    duration: 800,
+    easing: 'easeInOutSine',
     rotate: [`${state1.rot}deg`, `${state2.rot}deg`],
     // sorry this will probably not look pretty, but it saves a lot of lines..
     // im setting wether the util block will update before the animation or after
@@ -208,16 +238,24 @@ function animateDial(state1, state2) {
         var updateUtil = 'complete';
       }
       return {
-        [updateUtil]: () => applyStyles($utilityBlock, {
-          height: `${state2.utilBlockHeight}px`
-        })
+        [updateUtil]: () =>
+          applyStyles($utilityBlock, {
+            height: `${state2.utilBlockHeight}px`,
+          }),
       };
-    })()
+    })(),
   });
 }
 
 function animatePrice(st1, st2) {
-  var priceAnim = new CountUp($price, st1.price, st2.price, 0, 1, defaultPriceAnim);
+  var priceAnim = new CountUp(
+    $price,
+    st1.price,
+    st2.price,
+    0,
+    1,
+    defaultPriceAnim
+  );
   if (!priceAnim.error) {
     priceAnim.start();
   } else {
@@ -225,28 +263,68 @@ function animatePrice(st1, st2) {
   }
 }
 
+function animateCarPhoto(st1, st2) {
+  anime.timeline({
+    targets: `#${st1.photoId}`,
+    duration: 100,
+    easing: 'easeInOutSine',
+  }).add({
+    opacity: 0,
+  }).add({
+    duration: 400,
+    targets: `#${st2.photoId}`,
+    opacity: 1,
+  }, -100);
+}
+
+function animateCarDesc(st2) {
+  anime.timeline({
+    duration: 50,
+    easing: 'easeOutSine',
+    targets: '.anim-text',
+  }).add({
+    opacity: 0.5,
+    complete: () => {
+      $carDesc1.innerText = st2.carDesc1;
+      $carDesc2.innerText = st2.carDesc2;
+      $initRental.innerText = st2.initRental;
+      $termsInfo.innerText = st2.termsInfo;
+    }
+  }).add({
+    duration: 400,
+    opacity: 1,
+  });
+}
+
 function changeStates(state1, state2) {
   // change the position of the control knob
   applyStyles($knob, createPosStyles(state2.posX, state2.posY));
   animateDial(state1, state2);
+  animateCarPhoto(state1, state2);
   animatePrice(state1, state2);
+  animateCarDesc(state2);
   currentState = state2.id;
 }
 
 // initial load animation
 
-// window.addEventListener('load', () => {
-//   // play through all states initially
-//   let initIndex = 1;
-//   const initialInterval = setInterval(() => {
-//     anime({
-//       targets: '.dial-anime',
-//       rotate: `+=${MAX_ROTATION / 3}deg`,
-//       duration: 2000,
-//     });
-//     initIndex++;
-//     if (initIndex >= 1111) {
-//       clearInterval(initialInterval);
-//     }
-//   }, 1000);
-// });
+const dialAnim = anime({
+  targets: '.ad__glow',
+  duration: 1000,
+  easing: 'linear',
+  opacity: [0, .6],
+  direction: 'alternate',
+  loop: true,
+});
+
+window.addEventListener('load', () => {
+  // play through all states initially
+  let initIndex = 2;
+  const initialInterval = setInterval(() => {
+    changeStates(getCurSta(), STATES[`c${initIndex}`]);
+    initIndex++;
+    if (initIndex > 4) {
+      clearInterval(initialInterval);
+    }
+  }, 2000);
+});
