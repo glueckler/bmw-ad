@@ -3,19 +3,14 @@
 // The control dial is the animated png which is controlled internally
 //
 
-// scope variables on window
+// scope variables from libraries
 const anime = window.anime;
 const CountUp = window.CountUp;
 
+// set based on pngs to be animated
 const MAX_ROTATION = 231;
 
-const defaultPriceAnim = {
-  useEasing: true,
-  useGrouping: true,
-  separator: ',',
-  decimal: '.',
-};
-
+// Ad state control
 let knobEngaged = false;
 let currentState = 'c1';
 const STATES = {
@@ -75,14 +70,18 @@ const STATES = {
 const getCurSta = () => STATES[currentState];
 
 // elements
-const $knob = $('#control-knob');
-const $knobBox = $('#control-box');
 const $price = $('.con__price');
 const $utilityBlock = $('.ad__dial-utility');
 const $carDesc1 = $('#car-desc1');
 const $carDesc2 = $('#car-desc2');
 const $initRental = $('#init-rental');
 const $termsInfo = $('#terms-info');
+
+// virtual elements for user interaction
+const $knob = $('#control-knob');
+const $knobBox = $('#control-box');
+
+//
 
 // init DOM state/styles/values
 $price.innerText = getCurSta().price;
@@ -91,10 +90,7 @@ $carDesc2.innerText = getCurSta().carDesc2;
 $initRental.innerText = getCurSta().initRental;
 $termsInfo.innerText = getCurSta().termsInfo;
 
-applyStyles(
-  $knob,
-  createPosStyles(getCurSta().posX, getCurSta().posY)
-);
+applyStyles($knob, createPosStyles(getCurSta().posX, getCurSta().posY));
 
 applyStyles($utilityBlock, {
   height: `${getCurSta().utilBlockHeight}px`,
@@ -102,13 +98,15 @@ applyStyles($utilityBlock, {
 
 applyStyles($(`#${getCurSta().photoId}`), { opacity: 1 });
 
+//
+
 // events
 $event($knob, 'mousedown', e => {
   engageKnob(true);
 });
 
-// prevent the mouseout from bubbling
 $event($knob, 'mouseout', e => {
+  // prevent the mouseout from bubbling
   e.stopPropagation();
 });
 
@@ -125,7 +123,8 @@ $event($knobBox, 'mousemove', e => {
   if (!knobEngaged) return null;
 
   // find the offsets based on the knobbox
-  // if the mouse is moving in the control knob, the offsets will not be relative to the outer box
+  // if the mouse is moving in the control knob,
+  // the offsets will not be relative to the outer box
   // to fix that, ad the offsetLeft and offsetTop
   let { offsetX, offsetY } = e;
   const element = e.target;
@@ -139,13 +138,36 @@ $event($knobBox, 'mousemove', e => {
   }
 });
 
+//
+
+// consistent glow animation
+const dialAnim = anime({
+  targets: '.ad__glow',
+  duration: 1000,
+  easing: 'linear',
+  opacity: [0, 0.6],
+  direction: 'alternate',
+  loop: true,
+});
+
+// initial load animation (plays through all cars)
+window.addEventListener('load', () => {
+  // play through all states initially
+  let initIndex = 2;
+  const initialInterval = setInterval(() => {
+    changeStates(getCurSta(), STATES[`c${initIndex}`]);
+    initIndex++;
+    if (initIndex > 4) {
+      clearInterval(initialInterval);
+    }
+  }, 2000);
+});
+
+//
+
 // DOM helper functions
 function $(selector) {
   return document.querySelector(selector);
-}
-
-function $all(selector) {
-  return document.querySelectorAll(selector);
 }
 
 function $event(el, eventName, eventHandler) {
@@ -162,6 +184,9 @@ function applyStyles(el, styles = {}) {
   });
 }
 
+//
+
+// ad helper functions
 function createPosStyles(left, top) {
   return {
     top: `${top}px`,
@@ -175,7 +200,9 @@ function engageKnob(engage) {
     duration: 300,
     ease: 'easeInOutSine',
   };
+
   if (engage) {
+    // animate glow on
     dialAnim.pause();
     knobEngaged = true;
     anime({
@@ -187,17 +214,22 @@ function engageKnob(engage) {
 
   // if the knobEngage is already false, return and avoid restarting anim
   if (!knobEngaged) return null;
+
+  // animate glow off
   anime({
     ...glowAnimDefaults,
     opacity: 0,
     complete: () => {
       dialAnim.restart();
       dialAnim.play();
-    }
+    },
   });
   knobEngaged = false;
 }
 
+// this function is called when the user is dragging the knob
+// it determines if the ad should animate to a new car (ie change states)
+// it does this based on where the mouse is relative to each potential state
 function shouldChangeStates(mouseX, mouseY) {
   const getDistFromStateObj = ({ posX, posY }) => {
     const dX = mouseX - posX;
@@ -222,6 +254,9 @@ function shouldChangeStates(mouseX, mouseY) {
   };
 }
 
+//
+
+// animation helper function..
 function animateDial(state1, state2) {
   anime({
     targets: '.dial-anime',
@@ -248,6 +283,12 @@ function animateDial(state1, state2) {
 }
 
 function animatePrice(st1, st2) {
+  const defaultPriceAnim = {
+    useEasing: true,
+    useGrouping: true,
+    separator: ',',
+    decimal: '.',
+  };
   var priceAnim = new CountUp(
     $price,
     st1.price,
@@ -264,38 +305,51 @@ function animatePrice(st1, st2) {
 }
 
 function animateCarPhoto(st1, st2) {
-  anime.timeline({
-    targets: `#${st1.photoId}`,
-    duration: 100,
-    easing: 'easeInOutSine',
-  }).add({
-    opacity: 0,
-  }).add({
-    duration: 400,
-    targets: `#${st2.photoId}`,
-    opacity: 1,
-  }, -100);
+  anime
+    .timeline({
+      targets: `#${st1.photoId}`,
+      duration: 200,
+      easing: 'linear',
+    })
+    .add({
+      opacity: 0,
+    })
+    .add(
+      {
+        duration: 500,
+        targets: `#${st2.photoId}`,
+        opacity: 1,
+        easing: 'easeOutQuint',
+      },
+      -100
+    );
 }
 
 function animateCarDesc(st2) {
-  anime.timeline({
-    duration: 50,
-    easing: 'easeOutSine',
-    targets: '.anim-text',
-  }).add({
-    opacity: 0.5,
-    complete: () => {
-      $carDesc1.innerText = st2.carDesc1;
-      $carDesc2.innerText = st2.carDesc2;
-      $initRental.innerText = st2.initRental;
-      $termsInfo.innerText = st2.termsInfo;
-    }
-  }).add({
-    duration: 400,
-    opacity: 1,
-  });
+  anime
+    .timeline({
+      duration: 200,
+      easing: 'linear',
+      targets: '.anim-text',
+    })
+    .add({
+      opacity: 0.2,
+      complete: () => {
+        $carDesc1.innerText = st2.carDesc1;
+        $carDesc2.innerText = st2.carDesc2;
+        $initRental.innerText = st2.initRental;
+        $termsInfo.innerText = st2.termsInfo;
+      },
+    })
+    .add({
+      duration: 500,
+      opacity: 1,
+      easing: 'easeOutQuint',
+    });
 }
 
+// this function is called anytime the state will change
+// it calls all updates/animations
 function changeStates(state1, state2) {
   // change the position of the control knob
   applyStyles($knob, createPosStyles(state2.posX, state2.posY));
@@ -305,26 +359,3 @@ function changeStates(state1, state2) {
   animateCarDesc(state2);
   currentState = state2.id;
 }
-
-// initial load animation
-
-const dialAnim = anime({
-  targets: '.ad__glow',
-  duration: 1000,
-  easing: 'linear',
-  opacity: [0, .6],
-  direction: 'alternate',
-  loop: true,
-});
-
-window.addEventListener('load', () => {
-  // play through all states initially
-  let initIndex = 2;
-  const initialInterval = setInterval(() => {
-    changeStates(getCurSta(), STATES[`c${initIndex}`]);
-    initIndex++;
-    if (initIndex > 4) {
-      clearInterval(initialInterval);
-    }
-  }, 2000);
-});

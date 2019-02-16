@@ -45,6 +45,7 @@ p {
   transform-origin: 359.7px 122.8px;
 }
 
+/* Ad dial styles */
 .ad__dial-fill {
   z-index: 20;
   transform: rotate(-129deg);
@@ -55,9 +56,9 @@ p {
   transform: rotate(0deg);
 }
 
-/* Used to cover overlapping dial-bg */
+/* Used to fix overlapping dial-bg */
 .ad__dial-utility {
-  /* height will be dynamically set in js */
+  /* height will be dynamically set in main.js */
   /* height: 140px;  */
   background: #2061cb;
   width: 86px;
@@ -69,6 +70,7 @@ p {
   transform-origin: bottom left;
 }
 
+/* More ad styles */
 .ad__bg {
   z-index: 40;
 }
@@ -87,14 +89,12 @@ p {
 }
 
 /* Car Styles */
-/* . . . */
 .ad__car {
   z-index: 60;
   opacity: 0;
 }
 
 /* Ad Content Styles */
-/* . . . */
 .ad__con {
   margin: 8px 12px;
   display: flex;
@@ -149,7 +149,7 @@ p {
   left: 0;
 }
 
-/* hidden dial features */
+/* hidden dial styles */
 #control-box {
   height: 170px;
   width: 205px;
