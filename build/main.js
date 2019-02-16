@@ -31,6 +31,7 @@ const STATES = {
     rot: 0,
     price: 249,
     carName: 'BMW 118i SPORT 5-DOOR.',
+    utilBlockHeight: 0,
   },
   c2: {
     id: 'c2',
@@ -39,6 +40,7 @@ const STATES = {
     rot: 77,
     price: 359,
     carName: 'BMW X2 sDRIVE20i M SPORT.',
+    utilBlockHeight: 40,
   },
   c3: {
     id: 'c3',
@@ -47,6 +49,7 @@ const STATES = {
     rot: 154,
     price: 409,
     carName: 'BMW X3 xDRIVE20i M SPORT.',
+    utilBlockHeight: 155,
   },
   c4: {
     id: 'c4',
@@ -55,6 +58,7 @@ const STATES = {
     rot: 231,
     price: 679,
     carName: 'BMW X5 xDRIVE30d M SPORT.',
+    utilBlockHeight: 155,
   },
 };
 
@@ -63,6 +67,7 @@ const $ad = $('#TBM-BMW-ad');
 const $knob = $('#control-knob');
 const $knobBox = $('#control-box');
 const $price = $('.con__price');
+const $utilityBlock = $('.ad__dial-utility');
 
 // init DOM state/styles/values
 applyStyles(
@@ -72,9 +77,13 @@ applyStyles(
 
 $price.innerText = STATES[currentState].price;
 
+applyStyles($utilityBlock, {
+  height: `${STATES[currentState].utilBlockHeight}px`
+});
+
 // events
 $event($knob, 'mousedown', e => {
-  knobEngaged = true;
+  engageKnob(true);
 });
 
 // prevent the mouseout from bubbling
@@ -84,11 +93,11 @@ $event($knob, 'mouseout', e => {
 
 $event($knobBox, 'mouseout', e => {
   if (e.relatedTarget === $knob) return null;
-  knobEngaged = false;
+  engageKnob(false);
 });
 
 $event($knobBox, 'mouseup', () => {
-  knobEngaged = false;
+  engageKnob(false);
 });
 
 $event($knobBox, 'mousemove', e => {
@@ -139,6 +148,28 @@ function createPosStyles(left, top) {
   };
 }
 
+function engageKnob(engage) {
+  const glowAnimDefaults = {
+    targets: 'ad__glow',
+    duration: 100,
+    ease: 'easeInOutSine',
+  };
+  if (engage) {
+    knobEngaged = true;
+    anime({
+      ...glowAnimDefaults,
+      opacity: [0, 100],
+    });
+    return null;
+  }
+  knobEngaged = false;
+  anime({
+    ...glowAnimDefaults,
+    opacity: [100, 0],
+  });
+  return null;
+}
+
 function shouldChangeStates(mouseX, mouseY) {
   const getDistFromStateObj = ({ posX, posY }) => {
     const dX = mouseX - posX;
@@ -167,6 +198,21 @@ function animateDial(state1, state2) {
   anime({
     ...defaultDialAnim,
     rotate: [`${state1.rot}deg`, `${state2.rot}deg`],
+    // sorry this will probably not look pretty, but it saves a lot of lines..
+    // im setting wether the util block will update before the animation or after
+    // if it's always set afterwards there's a moment where it flashes
+    ...(() => {
+      if (state2.utilBlockHeight < state1.utilBlockHeight) {
+        var updateUtil = 'before';
+      } else {
+        var updateUtil = 'complete';
+      }
+      return {
+        [updateUtil]: () => applyStyles($utilityBlock, {
+          height: `${state2.utilBlockHeight}px`
+        })
+      };
+    })()
   });
 }
 
@@ -188,6 +234,7 @@ function changeStates(state1, state2) {
 }
 
 // initial load animation
+
 // window.addEventListener('load', () => {
 //   // play through all states initially
 //   let initIndex = 1;
@@ -198,7 +245,7 @@ function changeStates(state1, state2) {
 //       duration: 2000,
 //     });
 //     initIndex++;
-//     if (initIndex >= 4) {
+//     if (initIndex >= 1111) {
 //       clearInterval(initialInterval);
 //     }
 //   }, 1000);

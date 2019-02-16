@@ -1,7 +1,7 @@
 body {
   margin: 0;
   box-sizing: border-box;
-  font-family: "Helvetica Neue";
+  font-family: 'Helvetica Neue';
   font-size: 16px;
   width: 100vw;
   height: 100vh;
@@ -9,7 +9,7 @@ body {
   min-height: 250px;
   display: flex;
   align-items: center;
-  align-content: flex-start; 
+  align-content: flex-start;
   justify-content: center;
 }
 
@@ -17,16 +17,8 @@ p {
   margin: 0;
 }
 
-/* Ad Layout Styles */
+/* Ad container Layout Styles */
 /* . . . */
-.abs-layover {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}
-
 #TBM-BMW-ad {
   display: inline-block;
   border: 1px solid #333;
@@ -35,17 +27,26 @@ p {
   height: 250px;
 }
 
+.abs-layover {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
 .full-img {
   width: 100%;
 }
 
-.dial-center {
-  transform-origin: 359px 123px;
+/* Utility class for all dial animations */
+.dial-centered {
+  transform-origin: 359.7px 122.8px;
 }
 
-.ad__dial {
+.ad__dial-fill {
   z-index: 20;
-  transform: rotate(-126deg);
+  transform: rotate(-129deg);
 }
 
 .ad__dial-bg {
@@ -53,11 +54,25 @@ p {
   transform: rotate(0deg);
 }
 
+/* Used to cover overlapping dial-bg */
+.ad__dial-utility {
+  /* height will be dynamically set in js */
+  /* height: 140px;  */
+  background: #2061cb;
+  width: 86px;
+  position: absolute;
+  bottom: 117px;
+  left: 230px;
+  transform: rotate(35deg);
+  z-index: 35;
+  transform-origin: bottom left;
+}
+
 .ad__bg {
   z-index: 40;
 }
 
-.ad__control {
+.ad__dial {
   z-index: 50;
 }
 
@@ -74,7 +89,6 @@ p {
 .ad__car {
   z-index: 60;
 }
-
 
 /* Ad Content Styles */
 /* . . . */
