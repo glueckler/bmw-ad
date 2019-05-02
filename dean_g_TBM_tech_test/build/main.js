@@ -12,10 +12,11 @@ const MAX_ROTATION = 231;
 
 // Ad state control
 let knobEngaged = false;
-let currentState = 'c1';
-const STATES = {
-  c1: {
-    id: 'c1',
+let currentState = 0;
+let isChangingStates = true;
+const STATES = [
+  {
+    id: 0,
     photoId: 'car1',
     posX: 7,
     posY: 122,
@@ -27,8 +28,8 @@ const STATES = {
     utilBlockHeight: 0,
     termsInfo: '',
   },
-  c2: {
-    id: 'c2',
+  {
+    id: 1,
     photoId: 'car2',
     posX: 31,
     posY: 18,
@@ -40,8 +41,8 @@ const STATES = {
     utilBlockHeight: 40,
     termsInfo: 'Includes optional Misano Blue Xirallic paint.',
   },
-  c3: {
-    id: 'c3',
+  {
+    id: 2,
     photoId: 'car3',
     posX: 136,
     posY: 18,
@@ -53,8 +54,8 @@ const STATES = {
     utilBlockHeight: 155,
     termsInfo: 'Includes optional Sophisto Grey Xirallic paint.',
   },
-  c4: {
-    id: 'c4',
+  {
+    id: 3,
     photoId: 'car4',
     posX: 166,
     posY: 122,
@@ -66,7 +67,8 @@ const STATES = {
     utilBlockHeight: 155,
     termsInfo: '',
   },
-};
+];
+  
 const getCurSta = () => STATES[currentState];
 
 // elements
@@ -153,11 +155,11 @@ const dialAnim = anime({
 // initial load animation (plays through all cars)
 window.addEventListener('load', () => {
   // play through all states initially
-  let initIndex = 2;
+  let initIndex = 1;
   const initialInterval = setInterval(() => {
-    changeStates(getCurSta(), STATES[`c${initIndex}`]);
+    changeStates(getCurSta(), STATES[initIndex]);
     initIndex++;
-    if (initIndex > 4) {
+    if (initIndex >= 4) {
       clearInterval(initialInterval);
     }
   }, 2000);
@@ -231,6 +233,8 @@ function engageKnob(engage) {
 // it determines if the ad should animate to a new car (ie change states)
 // it does this based on where the mouse is relative to each potential state
 function shouldChangeStates(mouseX, mouseY) {
+  if (isChangingStates) return { yesChangeState: false };
+  
   const getDistFromStateObj = ({ posX, posY }) => {
     const dX = mouseX - posX;
     const dY = mouseY - posY;
@@ -247,7 +251,15 @@ function shouldChangeStates(mouseX, mouseY) {
     return closest;
   }, getCurSta());
 
-  const yesChangeState = closestStateToMouse !== getCurSta();
+  // only change states if next state is one state away
+  let yesChangeState = false;
+  if (closestStateToMouse === STATES[getCurSta().id + 1]) {
+    yesChangeState = true;
+  }
+  if (closestStateToMouse === STATES[getCurSta().id - 1]) {
+    yesChangeState = true;
+  }
+
   return {
     yesChangeState,
     nxtState: closestStateToMouse,
@@ -258,7 +270,7 @@ function shouldChangeStates(mouseX, mouseY) {
 
 // animation helper function..
 function animateDial(state1, state2) {
-  anime({
+  anime.timeline({
     targets: '.dial-anime',
     duration: 800,
     easing: 'easeInOutSine',
@@ -279,6 +291,10 @@ function animateDial(state1, state2) {
           }),
       };
     })(),
+  }).add({
+    complete: () => {
+      isChangingStates = false;
+    }
   });
 }
 
@@ -351,6 +367,7 @@ function animateCarDesc(st2) {
 // this function is called anytime the state will change
 // it calls all updates/animations
 function changeStates(state1, state2) {
+  isChangingStates = true;
   // change the position of the control knob
   applyStyles($knob, createPosStyles(state2.posX, state2.posY));
   animateDial(state1, state2);
